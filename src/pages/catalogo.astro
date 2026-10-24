@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Icon from '../components/Icon.astro';
+import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
+---
+
+<BaseLayout title="Catálogo" description="Explorá el catálogo de películas y series por título o tipo.">
+  <SiteHeader active="catalogo" />
+  <main id="contenido" class="page-shell catalog-page" data-catalog>
+    <header class="catalog-heading">
+      <div><h1>El catálogo.</h1><p>Las historias quedan. Las impresiones, también.</p></div>
+      <p class="demo-notice">Datos de ejemplo</p>
+    </header>
+
+    <div class="catalog-tools">
+      <div class="type-filters" role="group" aria-label="Filtrar por tipo">
+        <button type="button" data-kind-filter="all" aria-pressed="true">Todas</button>
+        <button type="button" data-kind-filter="movie" aria-pressed="false"><Icon name="film" />Películas</button>
+        <button type="button" data-kind-filter="tv" aria-pressed="false"><Icon name="series" />Series</button>
+      </div>
+      <label class="catalog-search"><Icon name="search" /><span class="sr-only">Buscar por título</span><input type="search" name="q" placeholder="Buscar por título" autocomplete="off" data-title-search /></label>
+    </div>
+    <p class="result-count" role="status" aria-live="polite" data-result-count>{demoTitles.length} títulos de ejemplo</p>
+
+    <section class="catalog-grid" aria-label="Películas y series">
+      {demoTitles.map((entry) => (
+        <article class="catalog-card" data-title-card data-kind={entry.kind} data-search-text={`${entry.title} ${entry.originalTitle}`}>
+          <a href={`/titulos/${entry.slug}/`} aria-labelledby={`title-${entry.slug}`}>
+            <div class="entry-image"><img src={entry.poster} alt="" loading="lazy" width="480" height="720" /><span class="entry-score"><Icon name="star" />{entry.score}<span>/10</span></span><span class="entry-open"><Icon name="arrow-up" /><span class="sr-only">Ver ficha</span></span></div>
+            <div class="entry-caption"><p class="entry-kind">{kindLabel(entry.kind)}<span>{entry.year}</span></p><h2 id={`title-${entry.slug}`}>{entry.title}</h2><p class="entry-watched">{formatWatchedDate(entry.watchedOn)}<span>{entry.platform}</span></p></div>
+          </a>
+        </article>
+      ))}
+    </section>
+    <section class="empty-state" hidden data-empty-state><h2>No aparece ese título.</h2><p>Probá con otro nombre o cambiá el tipo seleccionado.</p><button type="button" class="button button--ghost" data-reset-filters>Restablecer filtros</button></section>
+    <p class="catalog-footnote">Este catálogo permite explorar el diseño. Las valoraciones y fechas mostradas son de ejemplo.</p>
+  </main>
+</BaseLayout>
+
+<script>
+  function initializeCatalog() {
+    const catalog = document.querySelector<HTMLElement>('[data-catalog]');
+    if (!catalog || catalog.dataset.initialized === 'true') return;
+    catalog.dataset.initialized = 'true';
+    const search = catalog.querySelector<HTMLInputElement>('[data-title-search]');
+    const filters = Array.from(catalog.querySelectorAll<HTMLButtonElement>('[data-kind-filter]'));
+    const entries = Array.from(catalog.querySelectorAll<HTMLElement>('[data-title-card]'));
+    const count = catalog.querySelector<HTMLElement>('[data-result-count]');
+    const empty = catalog.querySelector<HTMLElement>('[data-empty-state]');
+    const reset = catalog.querySelector<HTMLButtonElement>('[data-reset-filters]');
+    let selectedKind = 'all';
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es').trim();
+    const update = () => {
+      const query = normalize(search?.value ?? '');
+      let visible = 0;
+      entries.forEach((entry) => {
+        const matchesKind = selectedKind === 'all' || entry.dataset.kind === selectedKind;
+        const matchesTitle = normalize(entry.dataset.searchText ?? '').includes(query);
+        entry.hidden = !(matchesKind && matchesTitle);
+        if (!entry.hidden) visible += 1;
+      });
+      filters.forEach((filter) => filter.setAttribute('aria-pressed', String(filter.dataset.kindFilter === selectedKind)));
+      if (count) count.textContent = `${visible} ${visible === 1 ? 'título de ejemplo' : 'títulos de ejemplo'}`;
+      if (empty) empty.hidden = visible > 0;
+    };
+    filters.forEach((filter) => filter.addEventListener('click', () => { selectedKind = filter.dataset.kindFilter ?? 'all'; update(); }));
+    search?.addEventListener('input', update);
+    reset?.addEventListener('click', () => { selectedKind = 'all'; if (search) search.value = ''; update(); search?.focus(); });
+    update();
+  }
+  initializeCatalog();
+  document.addEventListener('astro:page-load', initializeCatalog);
+</script>
+
+<style>
+  .catalog-page { padding-top:62px; padding-bottom:72px; }
+  .catalog-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:28px; margin-bottom:44px; }
+  h1 { margin:0; font-family:var(--font-display); font-size:clamp(3.5rem,7vw,6rem); font-weight:500; line-height:1; letter-spacing:-.035em; }
+  .catalog-heading p:not(.demo-notice) { margin:17px 0 0; color:var(--color-muted); font-size:17px; }
+  .catalog-heading .demo-notice { margin:0 0 5px; flex-shrink:0; }
+  .catalog-tools { display:flex; justify-content:space-between; align-items:center; gap:28px; padding-bottom:22px; border-bottom:1px solid var(--color-line); }
+  .type-filters { display:flex; gap:8px; }
+  .type-filters button { display:flex; align-items:center; gap:8px; min-height:44px; padding:10px 17px; border:1px solid transparent; border-radius:3px; color:var(--color-muted); background:transparent; font:inherit; cursor:pointer; transition:background .18s,color .18s; }
+  .type-filters button[aria-pressed='true'] { color:var(--color-bg); background:var(--color-text); }
+  .type-filters button:hover:not([aria-pressed='true']) { color:var(--color-text); background:var(--color-raised); }
+  .type-filters :global(svg),.catalog-search :global(svg) { width:18px; height:18px; flex-shrink:0; }
+  .catalog-search { display:flex; align-items:center; gap:11px; width:320px; min-height:44px; color:var(--color-muted); padding:8px 0 8px 14px; border-bottom:1px solid #ffffff65; }
+  .catalog-search:focus-within { color:var(--color-text); border-color:var(--color-text); }
+  .catalog-search input { width:100%; min-width:0; padding:4px 8px 4px 0; border:0; background:transparent; font:inherit; color:var(--color-text); outline:none; }
+  .catalog-search input::placeholder { color:var(--color-muted); }
+  .result-count { margin:20px 0 24px; color:var(--color-muted); font-size:14px; font-variant-numeric:tabular-nums; }
+  .catalog-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:42px 24px; }
+  .catalog-card { min-width:0; }
+  .catalog-card[hidden] { display:none; }
+  .catalog-card a { display:block; color:inherit; text-decoration:none; }
+  .entry-image { position:relative; overflow:hidden; aspect-ratio:2/3; background:var(--color-raised); }
+  .entry-image img { display:block; width:100%; height:100%; object-fit:cover; transition:transform .35s ease-out; }
+  .catalog-card a:hover img { transform:scale(1.025); }
+  .entry-score { position:absolute; top:13px; right:13px; display:flex; align-items:center; gap:6px; padding:7px 9px; color:var(--color-text); background:#0a0a0aeb; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .entry-score :global(svg) { width:14px; height:14px; }
+  .entry-score span { color:var(--color-muted); font-size:11px; font-weight:400; margin-left:-3px; }
+  .entry-open { position:absolute; right:13px; bottom:13px; display:grid; place-items:center; width:34px; height:34px; border:1px solid #ffffff80; background:#0a0a0abf; }
+  .entry-open :global(svg) { width:18px; height:18px; transform:rotate(45deg); }
+  .entry-caption { padding-top:15px; }
+  .entry-kind { display:flex; justify-content:space-between; gap:10px; margin:0 0 7px; color:var(--color-muted); font-size:12px; }
+  .entry-caption h2 { margin:0; font-size:18px; font-weight:600; line-height:1.4; letter-spacing:-.02em; }
+  .entry-watched { display:flex; flex-wrap:wrap; gap:4px 12px; margin:9px 0 0; color:var(--color-muted); font-size:12px; line-height:1.65; }
+  .catalog-footnote { max-width:65ch; margin:52px 0 0; color:var(--color-muted); font-size:13px; line-height:1.8; }
+  .empty-state { padding:80px 0; text-align:center; }
+  .empty-state[hidden] { display:none; }
+  .empty-state h2 { margin:0; font-family:var(--font-display); font-size:40px; font-weight:500; }
+  .empty-state p { margin:14px 0 24px; color:var(--color-muted); }
+  @media(max-width:760px) { .catalog-page { padding-top:34px; } .catalog-heading { display:block; margin-bottom:28px; } .catalog-heading p:not(.demo-notice) { max-width:28ch; font-size:15px; line-height:1.7; } .catalog-heading .demo-notice { display:inline-flex; margin-top:19px; } .catalog-tools { flex-direction:column; align-items:stretch; gap:17px; padding-bottom:18px; } .catalog-search { width:100%; padding-left:0; } .type-filters { justify-content:space-between; gap:5px; } .type-filters button { padding:9px 13px; font-size:14px; } .catalog-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:29px 16px; } .entry-score { top:8px; right:8px; padding:6px 7px; font-size:13px; } .entry-open { right:8px; bottom:8px; width:29px; height:29px; } .entry-caption h2 { font-size:15px; } .entry-kind,.entry-watched { font-size:11px; } .entry-watched { display:block; } .entry-watched span { display:block; } .catalog-footnote { margin-top:35px; } }
+  @media(prefers-reduced-motion:reduce) { .entry-image img,.type-filters button { transition:none; } .catalog-card a:hover img { transform:none; } }
+</style>

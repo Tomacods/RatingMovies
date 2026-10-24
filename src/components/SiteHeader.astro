@@ -1,0 +1,13 @@
+---
+import Icon from './Icon.astro';
+interface Props { active?: string; overlay?: boolean; }
+const { active, overlay = false } = Astro.props;
+---
+<header class:list={['site-header', { 'site-header--overlay': overlay }]}>
+  <a class="wordmark" href="/" aria-label="RatingMovies, inicio"><span class="brand-symbol"><Icon name="film" size={20} /></span><span>RATING<span class="wordmark-light">MOVIES</span></span></a>
+  <nav aria-label="Navegación principal">
+    <a href="/catalogo" aria-current={active === 'catalogo' ? 'page' : undefined}><Icon name="grid" size={15} /><span>Catálogo</span></a>
+    <a class="nav-about" href="/acerca" aria-current={active === 'acerca' ? 'page' : undefined}>Acerca de</a>
+    <a class="nav-signin" href="/ingresar" aria-current={active === 'ingresar' ? 'page' : undefined}><Icon name="lock" size={14} /><span>Ingresar</span></a>
+  </nav>
+</header>
