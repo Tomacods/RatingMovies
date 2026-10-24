@@ -48,6 +48,8 @@ Las operaciones privadas validan origen, token CSRF, sesión, UID y datos en el 
 
 `npm test` comprueba validación, fechas, valoraciones enteras, URLs de imagen, límites de solicitudes, CSRF y transformación de datos de TMDB. `npm run build` ejecuta la comprobación de tipos y genera las funciones de Vercel.
 
+La dependencia `jose` de `jwks-rsa` está fijada a 5.10.0 para evitar el error `ERR_REQUIRE_ESM` del cargador de funciones de Vercel. Las pruebas cubren el arranque sin `require(ESM)` y la conversión y verificación de claves RSA. Ver el [reporte de Firebase](https://github.com/firebase/firebase-admin-node/issues/3181).
+
 La prueba de integración es explícita y usa los servicios reales: con el servidor local activo, ejecutar en PowerShell `$env:RUN_FIREBASE_INTEGRATION='1'` y después `node scripts/verify-firebase.mjs`. Crea un usuario no administrador y un título temporal identificados como prueba, verifica permisos, TMDB, persistencia y logout, y retira sus registros al terminar. No pide ni cambia la contraseña del propietario.
 
 ## Despliegue en Vercel
