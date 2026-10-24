@@ -4,9 +4,10 @@ import SiteHeader from '../components/SiteHeader.astro';
 import Icon from '../components/Icon.astro';
 import { demoTitles } from '../data/demo';
 const backdrop = demoTitles[0]?.backdrop;
+if (Astro.locals.isAdmin) return Astro.redirect('/administrar', 303);
 ---
 
-<BaseLayout title="Ingresar" description="Vista de diseño del acceso privado de administración de RatingMovies.">
+<BaseLayout title="Ingresar" description="Acceso privado de administración de RatingMovies.">
   <SiteHeader active="ingresar" overlay />
   <main id="contenido" class="login-page">
     {backdrop && <img class="login-backdrop" src={backdrop} alt="" />}
@@ -15,16 +16,17 @@ const backdrop = demoTitles[0]?.backdrop;
       <div class="login-intro"><h1>Una historia.<br />Tu impresión.</h1><p>El catálogo está abierto a todos.<br />Este espacio está reservado a quien lo mantiene.</p><a href="/catalogo/" class="back-to-catalog"><Icon name="arrow-left" />Explorar el catálogo</a></div>
       <section class="login-form-area" aria-labelledby="login-title">
         <Icon name="lock" /><h2 id="login-title">Ingresar</h2><p class="login-description">Acceso de administrador</p>
-        <p class="demo-notice" id="login-design-notice">Vista de diseño. El acceso se habilitará al conectar la autenticación.</p>
-        <form aria-describedby="login-design-notice">
-          <fieldset disabled><legend class="sr-only">Formulario de acceso deshabilitado</legend><label for="email">Correo electrónico</label><input id="email" type="email" placeholder="tu-correo@ejemplo.com" autocomplete="off" disabled /><label for="password">Contraseña</label><input id="password" type="password" placeholder="No disponible en esta vista" autocomplete="off" disabled /><button class="button button--primary login-submit" type="button" disabled>Ingresar<Icon name="arrow-right" /></button></fieldset>
+        <form data-login data-csrf={Astro.locals.csrfToken}>
+          <fieldset><legend class="sr-only">Acceso de administrador</legend><label for="email">Correo electrónico</label><input id="email" name="email" type="email" placeholder="tu-correo@ejemplo.com" autocomplete="username" required maxlength="254" /><label for="password">Contraseña</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="4096" /><button class="button button--primary login-submit" type="submit">Ingresar<Icon name="arrow-right" /></button></fieldset>
+          <p class="form-message" data-login-message role="alert" tabindex="-1" hidden></p>
         </form>
-        <p class="credentials-note">Este boceto no recibe credenciales ni inicia una sesión.</p>
-        <a class="form-preview-link" href="/diseno/formulario/">Ver boceto del formulario<Icon name="arrow-right" /></a>
+        <p class="credentials-note">El acceso está reservado a la cuenta administradora.</p>
+        <noscript><p>Habilitá JavaScript para iniciar sesión.</p></noscript>
       </section>
     </div>
   </main>
 </BaseLayout>
+<script src="../scripts/login.ts"></script>
 
 <style>
   .login-page { position:relative; min-height:100svh; display:flex; align-items:center; isolation:isolate; background:var(--color-bg); }
@@ -44,7 +46,7 @@ const backdrop = demoTitles[0]?.backdrop;
   .login-form-area .demo-notice { margin:0 0 28px; font-size:12px; line-height:1.8; }
   fieldset { margin:0; padding:0; border:0; min-width:0; }
   label { display:block; font-size:13px; margin-bottom:9px; }
-  input { display:block; width:100%; min-height:49px; padding:13px 14px; margin-bottom:22px; border:1px solid #ffffff4f; border-radius:2px; background:#121316d9; color:var(--color-muted); font:inherit; font-size:14px; }
+  input { display:block; width:100%; min-height:49px; padding:13px 14px; margin-bottom:22px; border:1px solid #ffffff4f; border-radius:2px; background:#121316d9; color:var(--color-text); font:inherit; font-size:16px; }
   input::placeholder { color:#9d9fa8; opacity:1; }
   input:disabled { cursor:not-allowed; opacity:1; }
   .login-submit { display:flex; width:100%; justify-content:space-between; min-height:49px; margin-top:6px; }

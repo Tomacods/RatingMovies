@@ -1,0 +1,8 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import '../styles/admin.css';
+interface Props { title: string; }
+const { title } = Astro.props;
+---
+<BaseLayout title={title}><SiteHeader active="ingresar" /><main id="contenido" class="page-shell admin-page"><slot /></main></BaseLayout>

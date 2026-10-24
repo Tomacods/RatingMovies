@@ -2,28 +2,31 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import Icon from '../components/Icon.astro';
-import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
+import { formatWatchedDate, kindLabel } from '../lib/title';
+import { loadCatalog } from '../lib/server/catalog';
+const { titles, error } = await loadCatalog();
+if (error) Astro.response.status = 503;
 ---
 <BaseLayout>
   <SiteHeader overlay active="inicio" />
   <main id="contenido">
     <div class="sequence-toolbar">
-      <p class="demo-notice">Vista de diseño · datos de ejemplo</p>
-      <div class="type-filter" role="group" aria-label="Filtrar títulos">
+      <p class="demo-notice">Películas, series y una impresión personal.</p>
+      <div class="type-filter" role="group" aria-label="Filtrar títulos" hidden={titles.length === 0}>
         <button data-kind="all" aria-pressed="true">Todas</button>
         <button data-kind="movie" aria-pressed="false">Películas</button>
         <button data-kind="tv" aria-pressed="false">Series</button>
       </div>
     </div>
     <div class="film-sequence" id="film-sequence" aria-label="Secuencia de películas y series" tabindex="-1">
-      {demoTitles.map((entry,index)=>(
+      {titles.map((entry,index)=>(
         <article class:list={['scene',{'is-current':index===0}]} data-kind={entry.kind} data-slug={entry.slug} aria-labelledby={'title-'+entry.slug}>
           <img class="scene__image" src={entry.backdrop} alt="" width="1920" height="1080" loading={index===0?'eager':'lazy'} fetchpriority={index===0?'high':'auto'} />
           <div class="scene__scrim"></div>
           <div class="scene__content">
             <div class="scene__title-row">
               <h1 id={'title-'+entry.slug}>{entry.title.toUpperCase()}</h1>
-              <div class="scene__score" aria-label={'Valoración de ejemplo: '+entry.score+' de 10'}><Icon name="star" size={17} /><strong>{entry.score}</strong><span>/ 10</span></div>
+              <div class="scene__score" aria-label={'Valoración personal: '+entry.score+' de 10'}><Icon name="star" size={17} /><strong>{entry.score}</strong><span>/ 10</span></div>
             </div>
             <p class="scene__facts">{kindLabel(entry.kind)}<span></span>{entry.year}<span></span>{entry.runtime}</p>
             <p class="scene__note">{entry.note}</p>
@@ -33,9 +36,10 @@ import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
         </article>
       ))}
     </div>
-    <aside class="sequence-rail" aria-label="Controles de la secuencia">
+    <section class="sequence-empty" hidden={titles.length > 0} data-sequence-empty><h1>{error ? "No pudimos cargar el catálogo." : "El catálogo está por empezar."}</h1><p>{error ? "Intentá de nuevo en unos momentos." : "Las historias y sus impresiones aparecerán acá con el primer título."}</p><a class="button" href={error ? "/" : "/catalogo"}>{error ? "Volver a intentar" : "Ir al catálogo"}</a>{Astro.locals.isAdmin && <a class="button button--primary" href="/administrar/nuevo">Agregar un título</a>}</section>
+    <aside class="sequence-rail" aria-label="Controles de la secuencia" hidden={titles.length === 0}>
       <button class="rail-button" id="previous-title" aria-label="Título anterior" title="Título anterior" disabled><Icon name="arrow-up" size={22}/></button>
-      <div class="sequence-position"><span id="current-position">01</span><span class="position-line"></span><span id="total-position">03</span></div>
+      <div class="sequence-position"><span id="current-position">01</span><span class="position-line"></span><span id="total-position">{String(titles.length).padStart(2,"0")}</span></div>
       <button class="rail-button" id="next-title" aria-label="Título siguiente" title="Título siguiente"><Icon name="arrow-down" size={22}/></button>
       <button class="rail-button rail-button--play" id="toggle-play" aria-label="Reproducir secuencia" title="Reproducir secuencia" aria-pressed="false"><span id="play-icon"><Icon name="play" size={16}/></span><span id="pause-icon" hidden><Icon name="pause" size={16}/></span></button>
     </aside>
@@ -47,6 +51,11 @@ import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
   :global(body){overflow:hidden}
   main{height:100svh;min-height:620px;position:relative}
   .film-sequence{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:none;overscroll-behavior-y:contain}
+  .sequence-empty{position:absolute;inset:0;display:flex;flex-wrap:wrap;gap:20px;align-content:center;align-items:flex-start;padding:180px var(--space-page) 120px}
+  .sequence-empty h1{flex-basis:100%;max-width:16ch;font-size:clamp(2.6rem,6vw,5rem);margin:0}
+  .sequence-empty p{flex-basis:100%;max-width:55ch;color:var(--color-muted);font-size:16px}
+  .scene__note{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .scene__title-row h1{overflow-wrap:anywhere}
   .film-sequence::-webkit-scrollbar{display:none}
   .scene{height:100%;min-height:620px;position:relative;isolation:isolate;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden}
   .scene__image{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center 38%;z-index:-3}
@@ -123,10 +132,10 @@ import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
   const update = (index: number) => {
     current = Math.max(0, Math.min(index, visible.length - 1));
     scenes.forEach(scene => scene.classList.toggle('is-current', scene === visible[current]));
-    if (currentPosition) currentPosition.textContent = String(current + 1).padStart(2, '0');
+    if (currentPosition) currentPosition.textContent = String(visible.length ? current + 1 : 0).padStart(2, '0');
     if (totalPosition) totalPosition.textContent = String(visible.length).padStart(2, '0');
     if (previous) previous.disabled = current === 0;
-    if (next) next.disabled = current === visible.length - 1;
+    if (next) next.disabled = current >= visible.length - 1;
     if (play) play.disabled = visible.length <= 1 || reduce.matches;
     setTimer();
   };
@@ -148,6 +157,11 @@ import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
     setPlaying(false);
     scenes.forEach(scene => scene.hidden = kind !== 'all' && scene.dataset.kind !== kind);
     visible = scenes.filter(scene => !scene.hidden);
+    const empty = document.querySelector<HTMLElement>("[data-sequence-empty]");
+    if (empty && scenes.length > 0) {
+      empty.hidden = visible.length > 0;
+      if (!visible.length) { empty.querySelector("h1")!.textContent = "Todavía no hay títulos de este tipo."; empty.querySelector("p")!.textContent = "Elegí otro filtro o explorá el catálogo."; }
+    }
     filters.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.kind === kind)));
     scroller?.scrollTo({top:0,behavior:'instant'});
     update(0);
@@ -158,7 +172,7 @@ import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
     const url = new URL(window.location.href);
     if (kind === 'all') url.searchParams.delete('tipo'); else url.searchParams.set('tipo',kind);
     history.replaceState(null,'',url);
-    if (status) status.textContent = visible.length + ' títulos de ejemplo';
+    if (status) status.textContent = visible.length + ' títulos';
   }));
   previous?.addEventListener('click', () => {setPlaying(false);goTo(current - 1,true);});
   next?.addEventListener('click', () => {setPlaying(false);goTo(current + 1,true);});

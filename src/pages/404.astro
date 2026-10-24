@@ -1,0 +1,6 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+Astro.response.status = 404;
+---
+<BaseLayout title="Título no encontrado"><SiteHeader /><main class="page-shell" id="contenido"><h1>No encontramos esa página.</h1><p>El título pudo haberse eliminado o el enlace no es correcto.</p><a class="button" href="/catalogo">Volver al catálogo</a></main></BaseLayout>

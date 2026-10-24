@@ -6,8 +6,22 @@ const { active, overlay = false } = Astro.props;
 <header class:list={['site-header', { 'site-header--overlay': overlay }]}>
   <a class="wordmark" href="/" aria-label="RatingMovies, inicio"><span class="brand-symbol"><Icon name="film" size={20} /></span><span>RATING<span class="wordmark-light">MOVIES</span></span></a>
   <nav aria-label="Navegación principal">
-    <a href="/catalogo" aria-current={active === 'catalogo' ? 'page' : undefined}><Icon name="grid" size={15} /><span>Catálogo</span></a>
+    <a href="/catalogo" aria-label="Catálogo" aria-current={active === 'catalogo' ? 'page' : undefined}><Icon name="grid" size={15} /><span>Catálogo</span></a>
     <a class="nav-about" href="/acerca" aria-current={active === 'acerca' ? 'page' : undefined}>Acerca de</a>
-    <a class="nav-signin" href="/ingresar" aria-current={active === 'ingresar' ? 'page' : undefined}><Icon name="lock" size={14} /><span>Ingresar</span></a>
+    <a class="nav-signin" href={Astro.locals.isAdmin ? '/administrar' : '/ingresar'} aria-current={active === 'ingresar' ? 'page' : undefined}><Icon name="lock" size={14} /><span>{Astro.locals.isAdmin ? 'Administrar' : 'Ingresar'}</span></a>
+    {Astro.locals.isAdmin && <button type="button" class="nav-signout" data-logout data-csrf={Astro.locals.csrfToken}>Salir</button>}
   </nav>
 </header>
+<p class="navigation-error" data-logout-error role="alert" hidden></p>
+<script>
+  document.querySelector<HTMLButtonElement>('[data-logout]')?.addEventListener('click', async event => {
+    const button = event.currentTarget as HTMLButtonElement;
+    const message = document.querySelector<HTMLElement>('[data-logout-error]')!;
+    button.disabled = true; button.textContent = 'Saliendo…'; message.hidden = true;
+    try {
+      const response = await fetch('/api/logout', { method: 'POST', headers: { 'X-CSRF-Token': button.dataset.csrf ?? '' } });
+      if (!response.ok) throw new Error();
+      window.location.assign('/ingresar');
+    } catch { message.textContent = 'No se pudo cerrar sesión. Intentá de nuevo.'; message.hidden = false; button.disabled = false; button.textContent = 'Salir'; }
+  });
+</script>
