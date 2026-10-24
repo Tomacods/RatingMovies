@@ -1,0 +1,179 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Icon from '../components/Icon.astro';
+import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
+---
+<BaseLayout>
+  <SiteHeader overlay active="inicio" />
+  <main id="contenido">
+    <div class="sequence-toolbar">
+      <p class="demo-notice">Vista de diseño · datos de ejemplo</p>
+      <div class="type-filter" role="group" aria-label="Filtrar títulos">
+        <button data-kind="all" aria-pressed="true">Todas</button>
+        <button data-kind="movie" aria-pressed="false">Películas</button>
+        <button data-kind="tv" aria-pressed="false">Series</button>
+      </div>
+    </div>
+    <div class="film-sequence" id="film-sequence" aria-label="Secuencia de películas y series" tabindex="-1">
+      {demoTitles.map((entry,index)=>(
+        <article class:list={['scene',{'is-current':index===0}]} data-kind={entry.kind} data-slug={entry.slug} aria-labelledby={'title-'+entry.slug}>
+          <img class="scene__image" src={entry.backdrop} alt="" width="1920" height="1080" loading={index===0?'eager':'lazy'} fetchpriority={index===0?'high':'auto'} />
+          <div class="scene__scrim"></div>
+          <div class="scene__content">
+            <div class="scene__title-row">
+              <h1 id={'title-'+entry.slug}>{entry.title.toUpperCase()}</h1>
+              <div class="scene__score" aria-label={'Valoración de ejemplo: '+entry.score+' de 10'}><Icon name="star" size={17} /><strong>{entry.score}</strong><span>/ 10</span></div>
+            </div>
+            <p class="scene__facts">{kindLabel(entry.kind)}<span></span>{entry.year}<span></span>{entry.runtime}</p>
+            <p class="scene__note">{entry.note}</p>
+            <p class="scene__watched">Vista el {formatWatchedDate(entry.watchedOn)}<span class="platform">{entry.platform}</span></p>
+            <a class="button button--primary" href={'/titulos/'+entry.slug}>Ver ficha<Icon name="arrow-right" size={17} /></a>
+          </div>
+        </article>
+      ))}
+    </div>
+    <aside class="sequence-rail" aria-label="Controles de la secuencia">
+      <button class="rail-button" id="previous-title" aria-label="Título anterior" title="Título anterior" disabled><Icon name="arrow-up" size={22}/></button>
+      <div class="sequence-position"><span id="current-position">01</span><span class="position-line"></span><span id="total-position">03</span></div>
+      <button class="rail-button" id="next-title" aria-label="Título siguiente" title="Título siguiente"><Icon name="arrow-down" size={22}/></button>
+      <button class="rail-button rail-button--play" id="toggle-play" aria-label="Reproducir secuencia" title="Reproducir secuencia" aria-pressed="false"><span id="play-icon"><Icon name="play" size={16}/></span><span id="pause-icon" hidden><Icon name="pause" size={16}/></span></button>
+    </aside>
+    <div class="experience-bottom"><p class="scroll-hint"><span class="scroll-mark"></span><span>Deslizá para descubrir</span></p><a href="/catalogo" class="catalog-shortcut"><Icon name="grid" size={15}/><span>Explorar catálogo</span><Icon name="arrow-right" size={17}/></a><a class="credits-link" href="/acerca">Imágenes y créditos</a></div>
+    <p class="sr-only" id="sequence-status" role="status" aria-live="polite"></p>
+  </main>
+</BaseLayout>
+<style>
+  :global(body){overflow:hidden}
+  main{height:100svh;min-height:620px;position:relative}
+  .film-sequence{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:none;overscroll-behavior-y:contain}
+  .film-sequence::-webkit-scrollbar{display:none}
+  .scene{height:100%;min-height:620px;position:relative;isolation:isolate;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden}
+  .scene__image{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center 38%;z-index:-3}
+  .scene__scrim{position:absolute;inset:0;z-index:-2;background:linear-gradient(0deg,#0a0a0a 0%,#090c10de 10%,#080b1299 36%,#080b1200 73%),linear-gradient(90deg,#070b1370 0%,#070b1300 72%)}
+  .sequence-toolbar{position:absolute;z-index:10;top:111px;left:var(--space-page);right:var(--space-page);display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .sequence-toolbar .demo-notice{font-size:12px;margin:0;padding:6px 10px;border:1px solid #ffffff26;border-radius:3px;background:#0a0a0ad9;color:#e4e5e9}
+  .type-filter{display:flex;align-items:center;padding:4px;gap:3px;border:1px solid #ffffff40;border-radius:4px;background:#080b126b}
+  .type-filter button{border:0;padding:9px 18px;background:transparent;color:#e0e1e5;border-radius:2px;font-size:12px;font-weight:500;min-height:38px}
+  .type-filter button[aria-pressed=true]{background:#f5f5f2;color:#14151b}
+  .type-filter button:hover:not([aria-pressed=true]){background:#ffffff1a}
+  .scene__content{position:absolute;left:var(--space-page);bottom:clamp(120px,16vh,170px);max-width:min(850px,calc(100% - 235px))}
+  .scene__title-row{display:flex;align-items:center;gap:30px;flex-wrap:wrap;margin-bottom:19px}
+  h1{font-size:clamp(4rem,7.2vw,6rem);line-height:1.03;letter-spacing:-.015em;font-weight:500;margin:0;text-wrap:balance}
+  .scene__score{display:flex;align-items:baseline;gap:7px;padding-top:12px;white-space:nowrap}
+  .scene__score svg{align-self:center;margin-right:2px;color:#ded4b7}
+  .scene__score strong{font-size:28px;font-weight:500;line-height:1}
+  .scene__score span{font-size:13px;color:#c5c6cd}
+  .scene__facts{display:flex;gap:12px;align-items:center;font-size:12px;color:#dadce3;margin-bottom:18px}
+  .scene__facts span{width:3px;height:3px;background:#d7d9de;border-radius:50%}
+  .scene__note{font-size:clamp(15px,1.3vw,17px);font-weight:400;line-height:1.8;max-width:51ch;color:#e0e1e7;margin-bottom:19px}
+  .scene__watched{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:11px;color:#bbbec7;margin-bottom:28px}
+  .platform{padding:2px 9px;border:1px solid #ffffff40;border-radius:2px;font-size:10px;color:#e5e5e9}
+  .scene__content .button{min-height:45px;padding:12px 20px;font-size:12px}
+  .sequence-rail{position:absolute;z-index:10;right:var(--space-page);top:45%;transform:translateY(-30%);display:flex;flex-direction:column;align-items:center;gap:21px}
+  .rail-button{width:45px;height:45px;display:grid;place-items:center;border:1px solid #ffffff55;border-radius:50%;background:#0a0a0a44;color:#f5f5f2;transition:background .2s,border-color .2s}
+  .rail-button:hover:not(:disabled){background:#ffffff24;border-color:#fff}
+  .rail-button--play{margin-top:18px;width:36px;height:36px;border-color:#ffffff40}
+  .rail-button span{display:flex}
+  .sequence-position{display:flex;align-items:center;flex-direction:column;gap:11px;font-size:10px;color:#b9bbc5;font-variant-numeric:tabular-nums}
+  #current-position{font-size:13px;color:#f5f5f2}
+  .position-line{width:1px;height:32px;background:#ffffff40}
+  .experience-bottom{position:absolute;z-index:10;bottom:33px;left:var(--space-page);right:var(--space-page);display:flex;align-items:center;justify-content:space-between;gap:25px}
+  .scroll-hint{display:flex;align-items:center;gap:12px;font-size:10px;color:#b5bac5;margin:0}
+  .scroll-mark{width:14px;height:23px;border:1px solid #a7adb9;border-radius:9px;position:relative}
+  .scroll-mark::after{position:absolute;content:'';width:2px;height:5px;background:#e5e6eb;top:5px;left:5px}
+  .catalog-shortcut{display:flex;align-items:center;gap:11px;font-size:11px;border-bottom:1px solid #ffffff55;padding-bottom:8px}
+  .catalog-shortcut:hover{border-color:#fff}
+  .credits-link{font-size:9px;color:#a6aab5}
+  .credits-link:hover{text-decoration:underline}
+  @media(min-width:1500px){.scene__content{bottom:18vh}}
+  @media(max-width:850px){.scene__title-row{gap:20px}h1{font-size:clamp(3.5rem,9.5vw,5.5rem)}.credits-link{display:none}.experience-bottom{bottom:27px}.sequence-toolbar{top:98px;align-items:start}.sequence-toolbar .demo-notice{max-width:170px}.type-filter button{padding:8px 13px}.scene__content{max-width:calc(100% - 150px)}}
+  @media(max-width:600px){main,.scene{min-height:600px}.sequence-toolbar{top:91px;flex-direction:column;align-items:start;gap:17px}.sequence-toolbar .demo-notice{max-width:none;font-size:11px}.type-filter{gap:2px}.type-filter button{font-size:11px;padding:8px 17px;min-height:36px}.scene__image{object-position:61% center}.scene__content{max-width:calc(100% - 75px);bottom:128px}.scene__title-row{gap:13px;margin-bottom:17px}.scene__score{gap:5px;padding-top:6px}.scene__score strong{font-size:23px}.scene__score span{font-size:10px}.scene__score svg{width:13px;height:13px}h1{font-size:clamp(3.3rem,12.1vw,4.5rem);line-height:1.1;overflow-wrap:anywhere}.scene__facts{font-size:10px;gap:8px;margin-bottom:15px}.scene__note{font-size:13px;line-height:1.7;margin-bottom:17px;max-width:33ch}.scene__watched{font-size:10px;gap:9px;margin-bottom:23px}.platform{font-size:9px}.scene__content .button{font-size:11px;min-height:44px;padding:11px 17px}.sequence-rail{right:16px;top:37%;gap:15px}.rail-button{width:36px;height:36px}.rail-button--play{width:32px;height:32px;margin-top:9px}.sequence-position{font-size:9px;gap:9px}.position-line{height:23px}.experience-bottom{gap:10px;bottom:27px}.scroll-hint{font-size:8px;gap:8px;max-width:120px}.catalog-shortcut{font-size:10px;gap:7px}.catalog-shortcut svg{width:14px}.scene__scrim{background:linear-gradient(0deg,#0a0a0a 0%,#090c10ed 12%,#080b12b0 45%,#080b1210 80%),linear-gradient(90deg,#070b1340,#070b1300)}}
+  @media(max-height:700px) and (min-width:601px){.scene__content{bottom:92px}.scene__title-row{margin-bottom:10px}h1{font-size:4.5rem}.scene__note{margin-bottom:10px;font-size:14px}.scene__facts{margin-bottom:10px}.scene__watched{margin-bottom:16px}.sequence-toolbar{top:92px}}
+  @media(prefers-reduced-motion:reduce){.film-sequence{scroll-behavior:auto;scroll-snap-type:y proximity}}
+</style>
+<script>
+  const scroller = document.querySelector<HTMLElement>('#film-sequence');
+  const scenes = [...document.querySelectorAll<HTMLElement>('.scene')];
+  const filters = [...document.querySelectorAll<HTMLButtonElement>('.type-filter button')];
+  const previous = document.querySelector<HTMLButtonElement>('#previous-title');
+  const next = document.querySelector<HTMLButtonElement>('#next-title');
+  const play = document.querySelector<HTMLButtonElement>('#toggle-play');
+  const currentPosition = document.querySelector('#current-position');
+  const totalPosition = document.querySelector('#total-position');
+  const status = document.querySelector('#sequence-status');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let visible = scenes;
+  let current = 0;
+  let playing = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const setTimer = () => {
+    clearTimeout(timer);
+    if (playing && visible.length > 1 && !document.hidden && !reduce.matches) timer = setTimeout(() => goTo((current + 1) % visible.length), 9000);
+  };
+  const setPlaying = (value: boolean) => {
+    playing = value && visible.length > 1 && !reduce.matches;
+    play?.setAttribute('aria-pressed', String(playing));
+    play?.setAttribute('aria-label', playing ? 'Pausar secuencia' : 'Reproducir secuencia');
+    play?.setAttribute('title', playing ? 'Pausar secuencia' : 'Reproducir secuencia');
+    document.querySelector<HTMLElement>('#play-icon')!.hidden = playing;
+    document.querySelector<HTMLElement>('#pause-icon')!.hidden = !playing;
+    setTimer();
+  };
+  const update = (index: number) => {
+    current = Math.max(0, Math.min(index, visible.length - 1));
+    scenes.forEach(scene => scene.classList.toggle('is-current', scene === visible[current]));
+    if (currentPosition) currentPosition.textContent = String(current + 1).padStart(2, '0');
+    if (totalPosition) totalPosition.textContent = String(visible.length).padStart(2, '0');
+    if (previous) previous.disabled = current === 0;
+    if (next) next.disabled = current === visible.length - 1;
+    if (play) play.disabled = visible.length <= 1 || reduce.matches;
+    setTimer();
+  };
+  const goTo = (index: number, announce = false) => {
+    const scene = visible[Math.max(0, Math.min(index, visible.length - 1))];
+    if (!scene || !scroller) return;
+    scroller.scrollTo({ top: scene.offsetTop, behavior: reduce.matches ? 'instant' : 'smooth' });
+    update(visible.indexOf(scene));
+    if (announce && status) status.textContent = scene.querySelector('h1')?.textContent || '';
+  };
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) if (entry.isIntersecting && entry.intersectionRatio >= .55) {
+      const index = visible.indexOf(entry.target as HTMLElement);
+      if (index >= 0 && index !== current) update(index);
+    }
+  }, { root: scroller, threshold: [.55] });
+  scenes.forEach(scene => observer.observe(scene));
+  const applyFilter = (kind: string) => {
+    setPlaying(false);
+    scenes.forEach(scene => scene.hidden = kind !== 'all' && scene.dataset.kind !== kind);
+    visible = scenes.filter(scene => !scene.hidden);
+    filters.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.kind === kind)));
+    scroller?.scrollTo({top:0,behavior:'instant'});
+    update(0);
+  };
+  filters.forEach(button => button.addEventListener('click', () => {
+    const kind = button.dataset.kind || 'all';
+    applyFilter(kind);
+    const url = new URL(window.location.href);
+    if (kind === 'all') url.searchParams.delete('tipo'); else url.searchParams.set('tipo',kind);
+    history.replaceState(null,'',url);
+    if (status) status.textContent = visible.length + ' títulos de ejemplo';
+  }));
+  previous?.addEventListener('click', () => {setPlaying(false);goTo(current - 1,true);});
+  next?.addEventListener('click', () => {setPlaying(false);goTo(current + 1,true);});
+  play?.addEventListener('click', () => setPlaying(!playing));
+  scroller?.addEventListener('wheel', () => setPlaying(false), {passive:true});
+  scroller?.addEventListener('touchstart', () => setPlaying(false), {passive:true});
+  scroller?.addEventListener('focusin', () => setPlaying(false));
+  document.addEventListener('keydown', event => {
+    if (event.altKey || event.ctrlKey || event.metaKey || /INPUT|TEXTAREA|SELECT/.test((event.target as HTMLElement).tagName)) return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();setPlaying(false);goTo(current + (event.key === 'ArrowDown' ? 1 : -1),true);
+    }
+  });
+  document.addEventListener('visibilitychange', setTimer);
+  reduce.addEventListener('change', () => {setPlaying(false);update(current);});
+  const initialKind = new URLSearchParams(location.search).get('tipo') || 'all';
+  applyFilter(['all','movie','tv'].includes(initialKind) ? initialKind : 'all');
+</script>

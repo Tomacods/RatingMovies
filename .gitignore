@@ -1,0 +1,36 @@
+# Dependencias y archivos generados
+/node_modules/
+/dist/
+/.astro/
+/.npm-cache/
+/.vercel/
+*.log
+
+# Configuración privada
+.env
+.env.*
+!.env.example
+
+# Herramientas y contexto local de diseño
+/.agents/
+/.codex/
+/.impeccable/
+/.claude/
+/.cursor/
+/.gemini/
+/.windsurf/
+/skills/
+/AGENTS.md
+/CLAUDE.md
+/CODEX.md
+/GEMINI.md
+/SKILL.md
+/.cursorrules
+/.windsurfrules
+/PLAN.md
+/PRODUCT.md
+/DESIGN.md
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db

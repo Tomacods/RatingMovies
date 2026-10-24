@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Contenido de demostración para desarrollar la interfaz. No representa el historial real del propietario.",
+  "tmdbAttribution": {
+    "name": "The Movie Database (TMDB)",
+    "url": "https://www.themoviedb.org/",
+    "conditions": "https://developer.themoviedb.org/docs/faq",
+    "notice": "This product uses the TMDB API but is not endorsed or certified by TMDB.",
+    "imageNotice": "Imágenes obtenidas de TMDB; sus derechos pertenecen a los respectivos titulares.",
+    "logo": {
+      "file": "/images/tmdb-logo.svg",
+      "sourceUrl": "https://files.readme.io/29c6fee-blue_short.svg",
+      "sourcePage": "https://developer.themoviedb.org/docs/faq",
+      "description": "Logo SVG utilizado por la documentación oficial de TMDB, sin modificaciones."
+    }
+  },
+  "media": [
+    {
+      "id": "dune",
+      "title": "Dune",
+      "year": 2021,
+      "mediaType": "movie",
+      "tmdbId": 438631,
+      "runtimeMinutes": 155,
+      "genres": ["Ciencia ficción", "Aventura"],
+      "sourcePage": "https://www.themoviedb.org/movie/438631-dune?language=en-US",
+      "backdrop": {
+        "file": "/images/dune-backdrop.jpg",
+        "width": 1280,
+        "height": 720,
+        "sourceUrl": "https://image.tmdb.org/t/p/w1280/wYMbnrdRCREjNLwFlG5SLWzBjui.jpg",
+        "sourcePage": "https://www.themoviedb.org/movie/438631-dune?language=en-US"
+      },
+      "poster": {
+        "file": "/images/dune-poster.jpg",
+        "width": 500,
+        "height": 750,
+        "sourceUrl": "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+        "sourcePage": "https://www.themoviedb.org/movie/438631-dune?language=en-US"
+      }
+    },
+    {
+      "id": "interstellar",
+      "title": "Interstellar",
+      "year": 2014,
+      "mediaType": "movie",
+      "tmdbId": 157336,
+      "runtimeMinutes": 169,
+      "genres": ["Aventura", "Drama", "Ciencia ficción"],
+      "sourcePage": "https://www.themoviedb.org/movie/157336-interstellar?language=ko-KR",
+      "backdrop": {
+        "file": "/images/interstellar-backdrop.jpg",
+        "width": 1280,
+        "height": 720,
+        "sourceUrl": "https://image.tmdb.org/t/p/w1280/vgnoBSVzWAV9sNQUORaDGvDp7wx.jpg",
+        "sourcePage": "https://www.themoviedb.org/movie/157336-interstellar/images/backdrops?language=en-US",
+        "contributor": "happyclapper"
+      },
+      "poster": {
+        "file": "/images/interstellar-poster.jpg",
+        "width": 500,
+        "height": 750,
+        "sourceUrl": "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+        "sourcePage": "https://www.themoviedb.org/movie/157336-interstellar/images/posters?language=en-US",
+        "contributor": "pelopin28"
+      }
+    },
+    {
+      "id": "severance",
+      "title": "Severance",
+      "year": 2022,
+      "mediaType": "tv",
+      "tmdbId": 95396,
+      "runtimeMinutes": null,
+      "runtimeLabel": "Variable por episodio",
+      "genres": ["Drama", "Misterio", "Ciencia ficción y fantasía"],
+      "sourcePage": "https://www.themoviedb.org/tv/95396-severance?language=en-US",
+      "backdrop": {
+        "file": "/images/severance-backdrop.jpg",
+        "width": 1280,
+        "height": 720,
+        "sourceUrl": "https://image.tmdb.org/t/p/w1280/ixgFmf1X59PUZam2qbAfskx2gQr.jpg",
+        "sourcePage": "https://www.themoviedb.org/tv/95396-severance/images/backdrops?language=en-US",
+        "contributor": "paco"
+      },
+      "poster": {
+        "file": "/images/severance-poster.jpg",
+        "width": 500,
+        "height": 750,
+        "sourceUrl": "https://image.tmdb.org/t/p/w500/pPHpeI2X1qEd1CS1SeyrdhZ4qnT.jpg",
+        "sourcePage": "https://www.themoviedb.org/tv/95396-severance?language=en-US"
+      }
+    }
+  ],
+  "fonts": [
+    {
+      "family": "Oswald",
+      "file": "/fonts/oswald-latin-variable.woff2",
+      "style": "normal",
+      "weightRange": [200, 700],
+      "subset": "latin",
+      "sourceUrl": "https://fonts.gstatic.com/s/oswald/v57/TK3iWkUHHAIjg752GT8G.woff2",
+      "sourcePage": "https://fonts.google.com/specimen/Oswald",
+      "stylesheetUrl": "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Oswald:wght@200..700&display=swap",
+      "license": "SIL Open Font License 1.1",
+      "licenseFile": "/fonts/Oswald-OFL.txt",
+      "licenseSourceUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/OFL.txt"
+    },
+    {
+      "family": "Manrope",
+      "file": "/fonts/manrope-latin-variable.woff2",
+      "style": "normal",
+      "weightRange": [200, 800],
+      "subset": "latin",
+      "sourceUrl": "https://fonts.gstatic.com/s/manrope/v20/xn7gYHE41ni1AdIRggexSg.woff2",
+      "sourcePage": "https://fonts.google.com/specimen/Manrope",
+      "stylesheetUrl": "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Oswald:wght@200..700&display=swap",
+      "license": "SIL Open Font License 1.1",
+      "licenseFile": "/fonts/Manrope-OFL.txt",
+      "licenseSourceUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/OFL.txt"
+    }
+  ]
+}
