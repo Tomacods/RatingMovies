@@ -1,8 +1,11 @@
 ---
 import type { Title } from '../lib/title';
 import TmdbSearch from './TmdbSearch.astro';
+import { streamingPlatforms, otherViewingPlatforms, OTHER_PLATFORM_VALUE } from '../data/platforms';
 interface Props { entry?: Title; }
 const { entry } = Astro.props;
+const savedPlatform = entry?.platform ?? '';
+const hasSavedPlatform = savedPlatform && ![...streamingPlatforms, ...otherViewingPlatforms].includes(savedPlatform);
 const fields = [
   {name:'title',label:'Nombre',max:180,required:true},
   {name:'originalTitle',label:'Título original (opcional)',max:180},
@@ -30,7 +33,22 @@ const today = new Intl.DateTimeFormat('en-CA', {timeZone:'America/Argentina/Buen
     <section class="viewing-fields" aria-labelledby="viewing-title"><h2 id="viewing-title">La experiencia</h2><div class="fields-grid">
       <div class="field"><label for="score">Valoración personal /10</label><input id="score" name="score" type="number" required min="1" max="10" step="1" value={entry?.score} aria-describedby="score-help score-error" /><p id="score-help" class="field-help">Del 1 al 10, solo números enteros. Una valoración general por serie.</p><p class="field-error" id="score-error" data-error-for="score" hidden></p></div>
       <div class="field"><label for="watchedOn">Fecha de visualización</label><input id="watchedOn" name="watchedOn" type="date" required value={entry?.watchedOn ?? today} aria-describedby="watchedOn-error" /><p class="field-error" id="watchedOn-error" data-error-for="watchedOn" hidden></p></div>
-      <div class="field full-width"><label for="platform">Plataforma donde la viste</label><input id="platform" name="platform" type="text" required maxlength="100" value={entry?.platform} aria-describedby="platform-error" /><p class="field-error" id="platform-error" data-error-for="platform" hidden></p></div>
+      <div class="field full-width">
+        <label for="platform">Plataforma donde la viste</label>
+        <select id="platform" name="platform" required aria-describedby="platform-help platform-error">
+          <option value="" selected={!savedPlatform} disabled>Seleccioná una plataforma</option>
+          <optgroup label="Streaming en Argentina">{streamingPlatforms.map(platform => <option value={platform} selected={savedPlatform === platform}>{platform}</option>)}</optgroup>
+          <optgroup label="Otras formas de ver">{otherViewingPlatforms.map(platform => <option value={platform} selected={savedPlatform === platform}>{platform}</option>)}</optgroup>
+          {hasSavedPlatform && <optgroup label="Valor guardado"><option value={savedPlatform} selected>{savedPlatform}</option></optgroup>}
+          <option value={OTHER_PLATFORM_VALUE}>Otra plataforma…</option>
+        </select>
+        <p class="field-help" id="platform-help">Elegí dónde la viste. Si no aparece en la lista, seleccioná Otra plataforma.</p>
+        <div data-other-platform-field hidden>
+          <label for="platform-other">Nombre de la plataforma</label>
+          <input id="platform-other" name="platformOther" type="text" maxlength="100" disabled aria-describedby="platform-error" />
+        </div>
+        <p class="field-error" id="platform-error" data-error-for="platform" hidden></p>
+      </div>
       <div class="field full-width"><label for="note">Nota personal (opcional)</label><textarea id="note" name="note" rows="4" maxlength="3000" aria-describedby="note-error">{entry?.note}</textarea><p class="field-error" id="note-error" data-error-for="note" hidden></p></div>
     </div></section>
     <div class="form-actions"><button type="submit" class="button button--primary">{entry ? 'Guardar cambios' : 'Guardar título'}</button><a class="button button--ghost" href="/administrar">Cancelar</a></div></div>

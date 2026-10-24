@@ -1,4 +1,16 @@
+import { OTHER_PLATFORM_VALUE } from '../data/platforms';
+
 const form = document.querySelector<HTMLFormElement>('[data-title-form]');
+const platformSelect = form?.querySelector<HTMLSelectElement>('[name=platform]');
+const otherPlatformField = form?.querySelector<HTMLElement>('[data-other-platform-field]');
+const otherPlatformInput = form?.querySelector<HTMLInputElement>('[name=platformOther]');
+const updatePlatformField = () => {
+  const custom = platformSelect?.value === OTHER_PLATFORM_VALUE;
+  if (otherPlatformField) otherPlatformField.hidden = !custom;
+  if (otherPlatformInput) { otherPlatformInput.disabled = !custom; otherPlatformInput.required = custom; }
+};
+platformSelect?.addEventListener('change', updatePlatformField);
+updatePlatformField();
 form?.addEventListener('submit', async event => {
   event.preventDefault();
   const fields = form.querySelector('fieldset')!;
@@ -10,6 +22,8 @@ form?.addEventListener('submit', async event => {
   form.querySelectorAll('[aria-invalid]').forEach(input => input.removeAttribute('aria-invalid'));
   message.hidden = true;
   const data = Object.fromEntries(new FormData(form));
+  if (data.platform === OTHER_PLATFORM_VALUE) data.platform = String(data.platformOther ?? '').trim();
+  delete data.platformOther;
   fields.disabled = true; button.textContent = 'Guardando…'; form.setAttribute('aria-busy', 'true');
   try {
     const id = form.dataset.id;
