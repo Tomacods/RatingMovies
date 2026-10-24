@@ -2,7 +2,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import Icon from '../components/Icon.astro';
-import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
+import { formatWatchedDate, kindLabel } from '../lib/title';
+import { loadCatalog } from '../lib/server/catalog';
+const { titles, error } = await loadCatalog();
+if (error) Astro.response.status = 503;
 ---
 
 <BaseLayout title="Catálogo" description="Explorá el catálogo de películas y series por título o tipo.">
@@ -10,7 +13,7 @@ import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
   <main id="contenido" class="page-shell catalog-page" data-catalog>
     <header class="catalog-heading">
       <div><h1>El catálogo.</h1><p>Las historias quedan. Las impresiones, también.</p></div>
-      <p class="demo-notice">Datos de ejemplo</p>
+      {Astro.locals.isAdmin && <a class="button" href="/administrar/nuevo">Agregar título</a>}
     </header>
 
     <div class="catalog-tools">
@@ -21,10 +24,10 @@ import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
       </div>
       <label class="catalog-search"><Icon name="search" /><span class="sr-only">Buscar por título</span><input type="search" name="q" placeholder="Buscar por título" autocomplete="off" data-title-search /></label>
     </div>
-    <p class="result-count" role="status" aria-live="polite" data-result-count>{demoTitles.length} títulos de ejemplo</p>
+    <p class="result-count" role="status" aria-live="polite" data-result-count>{titles.length} títulos</p>
 
     <section class="catalog-grid" aria-label="Películas y series">
-      {demoTitles.map((entry) => (
+      {titles.map((entry) => (
         <article class="catalog-card" data-title-card data-kind={entry.kind} data-search-text={`${entry.title} ${entry.originalTitle}`}>
           <a href={`/titulos/${entry.slug}/`} aria-labelledby={`title-${entry.slug}`}>
             <div class="entry-image"><img src={entry.poster} alt="" loading="lazy" width="480" height="720" /><span class="entry-score"><Icon name="star" />{entry.score}<span>/10</span></span><span class="entry-open"><Icon name="arrow-up" /><span class="sr-only">Ver ficha</span></span></div>
@@ -33,8 +36,7 @@ import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
         </article>
       ))}
     </section>
-    <section class="empty-state" hidden data-empty-state><h2>No aparece ese título.</h2><p>Probá con otro nombre o cambiá el tipo seleccionado.</p><button type="button" class="button button--ghost" data-reset-filters>Restablecer filtros</button></section>
-    <p class="catalog-footnote">Este catálogo permite explorar el diseño. Las valoraciones y fechas mostradas son de ejemplo.</p>
+    <section class="empty-state" hidden={titles.length > 0} data-empty-state><h2>{error ? "No pudimos cargar el catálogo." : titles.length ? "No aparece ese título." : "El catálogo está por empezar."}</h2><p>{error ? "Intentá de nuevo en unos momentos." : titles.length ? "Probá con otro nombre o cambiá el tipo seleccionado." : "Las películas y series aparecerán acá cuando se agregue el primer título."}</p>{error ? <a class="button" href="/catalogo">Volver a intentar</a> : titles.length > 0 && <button type="button" class="button button--ghost" data-reset-filters>Restablecer filtros</button>}</section>
   </main>
 </BaseLayout>
 
@@ -61,7 +63,7 @@ import { demoTitles, formatWatchedDate, kindLabel } from '../data/demo';
         if (!entry.hidden) visible += 1;
       });
       filters.forEach((filter) => filter.setAttribute('aria-pressed', String(filter.dataset.kindFilter === selectedKind)));
-      if (count) count.textContent = `${visible} ${visible === 1 ? 'título de ejemplo' : 'títulos de ejemplo'}`;
+      if (count) count.textContent = `${visible} ${visible === 1 ? 'título' : 'títulos'}`;
       if (empty) empty.hidden = visible > 0;
     };
     filters.forEach((filter) => filter.addEventListener('click', () => { selectedKind = filter.dataset.kindFilter ?? 'all'; update(); }));

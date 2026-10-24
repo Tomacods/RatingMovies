@@ -1,0 +1,39 @@
+---
+import type { Title } from '../lib/title';
+import TmdbSearch from './TmdbSearch.astro';
+interface Props { entry?: Title; }
+const { entry } = Astro.props;
+const fields = [
+  {name:'title',label:'Nombre',max:180,required:true},
+  {name:'originalTitle',label:'Título original (opcional)',max:180},
+  {name:'year',label:'Año de estreno',type:'number',min:1888,max:new Date().getUTCFullYear()+5,required:true},
+  {name:'runtime',label:'Duración',max:100,required:true,help:'En películas, duración total. En series, por episodio.'},
+  {name:'genre',label:'Géneros (opcional)',max:180},
+] as const;
+const today = new Intl.DateTimeFormat('en-CA', {timeZone:'America/Argentina/Buenos_Aires'}).format(new Date());
+---
+<TmdbSearch linkedTitle={entry?.tmdbId ? entry.title : undefined} />
+<form class="title-form" data-title-form data-id={entry?.slug ?? ''} data-csrf={Astro.locals.csrfToken}>
+  <input type="hidden" name="tmdbId" value={entry?.tmdbId ?? ''} />
+  <p class="form-message" data-form-message role="alert" tabindex="-1" hidden></p>
+  <fieldset><legend class="sr-only">Ficha y valoración del título</legend><div class="form-composition">
+    <section class="cover-column" aria-labelledby="cover-title"><h2 id="cover-title">Las imágenes</h2>
+      <img class="cover-preview" src={entry?.poster ?? '/images/placeholder.svg'} width="220" height="330" alt={entry ? `Portada de ${entry.title}` : 'Espacio para la portada'} data-poster-preview />
+      <div class="field"><label for="poster">URL de la portada (opcional)</label><input id="poster" name="poster" type="text" inputmode="url" maxlength="2000" value={entry?.poster === '/images/placeholder.svg' ? '' : entry?.poster} aria-describedby="poster-help poster-error" /><p class="field-help" id="poster-help">Pegá una dirección https:// de una imagen. Si no tenés una, podés guardar sin portada.</p><p class="field-error" id="poster-error" data-error-for="poster" hidden></p></div>
+      <div class="field"><label for="backdrop">URL del fondo (opcional)</label><input id="backdrop" name="backdrop" type="text" inputmode="url" maxlength="2000" value={entry?.backdrop === '/images/placeholder.svg' ? '' : entry?.backdrop} aria-describedby="backdrop-error" /><p class="field-error" id="backdrop-error" data-error-for="backdrop" hidden></p></div>
+    </section>
+    <div class="fields-column"><section aria-labelledby="work-title"><h2 id="work-title">La obra</h2><div class="fields-grid">
+      {fields.map(field => <div class="field"><label for={field.name}>{field.label}</label><input id={field.name} name={field.name} type={'type' in field ? field.type : 'text'} min={'min' in field ? field.min : undefined} max={'type' in field ? field.max : undefined} maxlength={'type' in field ? undefined : field.max} required={'required' in field && field.required} value={entry?.[field.name]} aria-describedby={`${field.name}-error`} />{'help' in field && <p class="field-help">{field.help}</p>}<p class="field-error" id={`${field.name}-error`} data-error-for={field.name} hidden></p></div>)}
+      <div class="field"><label for="kind">Tipo</label><select id="kind" name="kind" aria-describedby="kind-error"><option value="movie" selected={entry?.kind !== 'tv'}>Película</option><option value="tv" selected={entry?.kind === 'tv'}>Serie</option></select><p class="field-error" id="kind-error" data-error-for="kind" hidden></p></div>
+      <div class="field full-width"><label for="summary">Sinopsis (opcional)</label><textarea id="summary" name="summary" rows="4" maxlength="5000" aria-describedby="summary-error">{entry?.summary}</textarea><p class="field-error" id="summary-error" data-error-for="summary" hidden></p></div>
+    </div></section>
+    <section class="viewing-fields" aria-labelledby="viewing-title"><h2 id="viewing-title">La experiencia</h2><div class="fields-grid">
+      <div class="field"><label for="score">Valoración personal /10</label><input id="score" name="score" type="number" required min="1" max="10" step="1" value={entry?.score} aria-describedby="score-help score-error" /><p id="score-help" class="field-help">Del 1 al 10, solo números enteros. Una valoración general por serie.</p><p class="field-error" id="score-error" data-error-for="score" hidden></p></div>
+      <div class="field"><label for="watchedOn">Fecha de visualización</label><input id="watchedOn" name="watchedOn" type="date" required value={entry?.watchedOn ?? today} aria-describedby="watchedOn-error" /><p class="field-error" id="watchedOn-error" data-error-for="watchedOn" hidden></p></div>
+      <div class="field full-width"><label for="platform">Plataforma donde la viste</label><input id="platform" name="platform" type="text" required maxlength="100" value={entry?.platform} aria-describedby="platform-error" /><p class="field-error" id="platform-error" data-error-for="platform" hidden></p></div>
+      <div class="field full-width"><label for="note">Nota personal (opcional)</label><textarea id="note" name="note" rows="4" maxlength="3000" aria-describedby="note-error">{entry?.note}</textarea><p class="field-error" id="note-error" data-error-for="note" hidden></p></div>
+    </div></section>
+    <div class="form-actions"><button type="submit" class="button button--primary">{entry ? 'Guardar cambios' : 'Guardar título'}</button><a class="button button--ghost" href="/administrar">Cancelar</a></div></div>
+  </div></fieldset><noscript><p>Habilitá JavaScript para guardar el título.</p></noscript>
+</form>
+<script src="../scripts/title-form.ts"></script>

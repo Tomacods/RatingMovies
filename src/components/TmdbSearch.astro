@@ -1,0 +1,15 @@
+---
+interface Props { linkedTitle?: string; }
+const { linkedTitle } = Astro.props;
+---
+<section class="tmdb-search" aria-labelledby="tmdb-heading">
+  <h2 id="tmdb-heading">Buscá la película o serie.</h2>
+  <p class="field-help">Elegí un resultado para completar la ficha y las imágenes. Tu valoración, fecha, plataforma y nota personal se conservan.</p>
+  <form data-tmdb-search data-csrf={Astro.locals.csrfToken} role="search"><label for="tmdb-query">Nombre en TMDB</label><div class="tmdb-query-row"><input id="tmdb-query" name="query" type="search" minlength="2" maxlength="100" required placeholder="Por ejemplo, Interstellar" autocomplete="off" /><button class="button" type="submit">Buscar</button></div></form>
+  <p class="tmdb-status" data-tmdb-status role="status" aria-live="polite"></p>
+  <ul class="tmdb-results" data-tmdb-results aria-label="Resultados de TMDB"></ul>
+  <button class="button" type="button" data-tmdb-more hidden>Más resultados</button>
+  <p class="field-help" data-tmdb-selected hidden={!linkedTitle}>{linkedTitle ? `Ficha vinculada a TMDB: ${linkedTitle}.` : ''}</p>
+  <p class="field-help">Si no encontrás la obra, podés completar los datos manualmente.</p>
+</section>
+<script src="../scripts/tmdb-search.ts"></script>

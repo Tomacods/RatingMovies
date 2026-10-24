@@ -2,16 +2,13 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import Icon from '../../components/Icon.astro';
-import { demoTitles, formatWatchedDate, kindLabel } from '../../data/demo';
-
-export function getStaticPaths() {
-  return demoTitles.map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
-}
-type Props = { entry: (typeof demoTitles)[number] };
-const { entry } = Astro.props;
+import { formatWatchedDate, kindLabel } from '../../lib/title';
+import { getTitle } from '../../lib/server/catalog';
+const entry = await getTitle(Astro.params.slug);
+if (!entry) return Astro.redirect('/404');
 ---
 
-<BaseLayout title={entry.title} description={`Ficha de ejemplo de ${entry.title}, con valoración y fecha de visualización.`}>
+<BaseLayout title={entry.title} description={`Ficha de ${entry.title}, con valoración y fecha de visualización.`}>
   <SiteHeader active="catalogo" overlay />
   <main id="contenido">
     <section class="detail-hero" aria-labelledby="title-name">
@@ -20,13 +17,13 @@ const { entry } = Astro.props;
       <div class="page-shell hero-content">
         <a class="back-link" href="/catalogo/"><Icon name="arrow-left" />Volver al catálogo</a>
         <div class="detail-composition">
-          <div class="title-copy"><h1 id="title-name">{entry.title}</h1><p class="title-meta"><span>{entry.year}</span><span>{kindLabel(entry.kind)}</span><span>{entry.runtime}</span><span>{entry.genre}</span></p><div class="watch-line"><span class="detail-score"><Icon name="star" /><strong>{entry.score}</strong><span>/10</span></span><p>Vista el {formatWatchedDate(entry.watchedOn)}<span>En {entry.platform}</span></p></div><p class="demo-notice">Datos de ejemplo · valoración ilustrativa</p></div>
+          <div class="title-copy"><h1 id="title-name">{entry.title}</h1><p class="title-meta"><span>{entry.year}</span><span>{kindLabel(entry.kind)}</span><span>{entry.runtime}</span><span>{entry.genre}</span></p><div class="watch-line"><span class="detail-score"><Icon name="star" /><strong>{entry.score}</strong><span>/10</span></span><p>Vista el {formatWatchedDate(entry.watchedOn)}<span>En {entry.platform}</span></p></div>{Astro.locals.isAdmin && <a class="button" href={`/administrar/${entry.slug}`}>Editar título</a>}</div>
           <img class="detail-poster" src={entry.poster} alt={`Portada de ${entry.title}`} width="400" height="600" />
         </div>
       </div>
     </section>
     <div class="page-shell detail-reading">
-      <div class="reading-main"><section aria-labelledby="summary-title"><h2 id="summary-title">La historia</h2><p>{entry.summary}</p></section><section class="personal-note" aria-labelledby="note-title"><h2 id="note-title">Mi impresión</h2><blockquote>{entry.note}</blockquote><p class="example-explanation">Esta nota y la valoración son datos de ejemplo para presentar el diseño.</p></section></div>
+      <div class="reading-main"><section aria-labelledby="summary-title"><h2 id="summary-title">La historia</h2><p>{entry.summary || "Todavía no hay una sinopsis para este título."}</p></section><section class="personal-note" aria-labelledby="note-title"><h2 id="note-title">Mi impresión</h2><blockquote>{entry.note || "Por ahora, mi impresión está en la valoración."}</blockquote></section></div>
       <aside class="title-facts" aria-label="Datos de la ficha"><h2>La ficha</h2><dl><div><dt>Título original</dt><dd>{entry.originalTitle}</dd></div><div><dt>Tipo</dt><dd>{kindLabel(entry.kind)}</dd></div><div><dt>{entry.kind === 'tv' ? 'Duración por episodio' : 'Duración'}</dt><dd>{entry.runtime}</dd></div><div><dt>Género</dt><dd>{entry.genre}</dd></div><div><dt>Fecha de visualización</dt><dd>{formatWatchedDate(entry.watchedOn)}</dd></div><div><dt>Plataforma elegida</dt><dd>{entry.platform}</dd></div></dl></aside>
     </div>
   </main>

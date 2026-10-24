@@ -1,0 +1,11 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { loadCatalog } from '../../lib/server/catalog';
+import { formatWatchedDate, kindLabel } from '../../lib/title';
+const { titles, error } = await loadCatalog();
+if (error) Astro.response.status = 503;
+---
+<AdminLayout title="Administrar catálogo">
+  <header class="admin-heading"><div><h1>Tu catálogo.</h1><p>Las historias que viste, con tu valoración.</p></div><a class="button button--primary" href="/administrar/nuevo">Agregar un título</a></header>
+  {error ? <section class="admin-empty"><h2>No pudimos cargar los títulos.</h2><p>Intentá de nuevo en unos momentos.</p><a class="button" href="/administrar">Volver a intentar</a></section> : titles.length ? <ul class="admin-list">{titles.map(entry => <li class="admin-entry"><div><h2>{entry.title}</h2><p>{kindLabel(entry.kind)} · {entry.score}/10 · {formatWatchedDate(entry.watchedOn)}</p></div><div class="entry-actions"><a class="button" href={`/titulos/${entry.slug}`}>Ver ficha</a><a class="button" href={`/administrar/${entry.slug}`}>Editar</a></div></li>)}</ul> : <section class="admin-empty"><h2>La primera historia te espera.</h2><p>Agregá una película o serie para empezar tu catálogo público.</p></section>}
+</AdminLayout>

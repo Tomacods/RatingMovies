@@ -1,0 +1,21 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import TitleForm from '../../components/TitleForm.astro';
+import { getTitle } from '../../lib/server/catalog';
+const entry = await getTitle(Astro.params.id);
+if (!entry) return Astro.redirect('/404');
+---
+<AdminLayout title={`Editar ${entry.title}`}><a class="admin-back" href="/administrar">Volver a tus títulos</a><header class="admin-heading"><div><h1>Editar el título.</h1><p>{entry.title}</p></div></header><TitleForm entry={entry} /><details class="delete-area"><summary>Eliminar este título</summary><p>Se eliminarán la ficha y tu valoración de «{entry.title}». Esta acción no se puede deshacer.</p><button class="button" type="button" data-delete-title={entry.slug} data-csrf={Astro.locals.csrfToken}>Confirmar eliminación</button><p class="form-message" data-delete-error role="alert" hidden></p></details></AdminLayout>
+<script>
+  document.querySelector<HTMLButtonElement>('[data-delete-title]')?.addEventListener('click', async event => {
+    const button = event.currentTarget as HTMLButtonElement;
+    const message = document.querySelector<HTMLElement>('[data-delete-error]')!;
+    button.disabled = true; button.textContent = 'Eliminando…'; message.hidden = true;
+    try {
+      const response = await fetch(`/api/titles/${encodeURIComponent(button.dataset.deleteTitle!)}`, { method: 'DELETE', headers: { 'X-CSRF-Token': button.dataset.csrf ?? '' } });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      window.location.assign('/administrar');
+    } catch (error) { message.textContent = error instanceof Error && !(error instanceof TypeError) ? error.message : 'No se pudo eliminar. Intentá de nuevo.'; message.hidden = false; button.disabled = false; button.textContent = 'Confirmar eliminación'; }
+  });
+</script>
